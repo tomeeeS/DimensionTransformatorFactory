@@ -1,7 +1,8 @@
 package com.company;
 
 /**
- * Created by satsaat on 2018. 04. 17..
+ * @author Sajti Tamás
  */
 public class Product {
+    private String name;
 }

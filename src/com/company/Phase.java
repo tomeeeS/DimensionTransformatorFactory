@@ -1,18 +1,18 @@
 package com.company;
 
 /**
- * Created by satsaat on 2018. 04. 17..
+ * @author Sajti Tamás
  */
 public enum Phase {
 
-    ASSEMBLE_TRANSFORMATOR( 1, 1 ),
-    ASSEMBLE_DIMENSION_BREAKER( 1, 1 ),
-    BLEND_FUEL( 1, 1 );
+    ASSEMBLE_ACCELERATOR( 10, 18 ), // electricity, atomic accelerator
+    ASSEMBLE_DIMENSION_BREAKER( 8, 11 ), // mirror, hammer
+    BLEND_FUEL( 7, 9 ); // dark matter, free radicals
 
     private final int minRobotWorkingTimeMs;
     private final int maxRobotWorkingTimeMs;
 
-    Phase(int minRobotWorkingTimeMs, int maxRobotWorkingTimeMs) {
+    Phase( int minRobotWorkingTimeMs, int maxRobotWorkingTimeMs ) {
         this.minRobotWorkingTimeMs = minRobotWorkingTimeMs;
         this.maxRobotWorkingTimeMs = maxRobotWorkingTimeMs;
     }

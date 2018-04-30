@@ -1,11 +1,10 @@
-/**
- * Created by satsaat on 2018. 04. 24..
- */
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.company.Phase;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * @author Sajti Tamás
+ */
 public class PhaseTest {
     @Test
     public void test(){
