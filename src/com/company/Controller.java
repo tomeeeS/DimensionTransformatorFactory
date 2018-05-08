@@ -1,5 +1,6 @@
 package com.company;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
@@ -42,17 +43,25 @@ public class Controller implements Runnable {
         return random.nextInt( maxCheckOnRobotsTimeMs - minCheckOnRobotsTimeMs + 1 ) + minCheckOnRobotsTimeMs;
     }
 
-    public Function< Phase, Recipe > getRecipes() {
+    public Function< Phase, HashMap< Product.ProductType, Integer > > getRecipes() {
         return ( Phase p ) -> {
+            HashMap< Product.ProductType, Integer > map = new HashMap<>();
             switch ( p ) {
                 case ASSEMBLE_ACCELERATOR:
                 default:
-                    return new Recipe( new RecipeItem( ATOMIC_ACCELERATOR, 1 ), new RecipeItem( ELECTRICITY, 7 ) );
+                    map.put( ATOMIC_ACCELERATOR, 1 );
+                    map.put( ELECTRICITY, 7 );
+                    break;
                 case ASSEMBLE_DIMENSION_BREAKER:
-                    return new Recipe( new RecipeItem( MIRROR, 4 ), new RecipeItem( HAMMER, 2 ) );
+                    map.put( MIRROR, 4 );
+                    map.put( HAMMER, 2 );
+                    break;
                 case BLEND_FUEL:
-                    return new Recipe( new RecipeItem( DARK_MATTER, 10 ), new RecipeItem( FREE_RADICAL, 7000 ) );
+                    map.put( DARK_MATTER, 10 );
+                    map.put( FREE_RADICAL, 7000 );
+                    break;
             }
+            return map;
         };
     }
 }
