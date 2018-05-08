@@ -1,19 +1,22 @@
 package com.company;
 
+import java.util.List;
 import java.util.Random;
 
 /**
  * @author Sajti Tamás
  */
 public class Controller implements Runnable {
-    
+
     private final int minCheckOnRobotsTimeMs;
     private final int maxCheckOnRobotsTimeMs;
+    private final List< Robot > robots;
     private Random random = new Random();
 
-    public Controller( int minCheckOnRobotsTimeMs, int maxCheckOnRobotsTimeMs ) {
+    public Controller( int minCheckOnRobotsTimeMs, int maxCheckOnRobotsTimeMs, List< Robot > robots ) {
         this.minCheckOnRobotsTimeMs = minCheckOnRobotsTimeMs;
         this.maxCheckOnRobotsTimeMs = maxCheckOnRobotsTimeMs;
+        this.robots = robots;
     }
 
     @Override
@@ -27,7 +30,9 @@ public class Controller implements Runnable {
     }
 
     private void checkOnRobots() {
-
+        for( int i = 0; i < robots.size(); i++ ) {
+            robots.get( i ).whatsup();
+        }
     }
 
     private int getRandomSleepTime() {
