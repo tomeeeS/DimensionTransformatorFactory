@@ -28,4 +28,8 @@ public enum Phase {
     public static Phase getFirst() {
         return values()[ 0 ];
     }
+
+    public boolean isLast() {
+        return this == BLEND_FUEL;
+    }
 }

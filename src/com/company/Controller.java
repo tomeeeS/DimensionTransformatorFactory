@@ -1,5 +1,6 @@
 package com.company;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
@@ -23,11 +24,20 @@ public class Controller implements Runnable {
     @Override
     public void run() {
         try {
-            Thread.sleep( getRandomSleepTime() );
-            checkOnRobots();
+            while( !isDone() ) {
+                Thread.sleep( getCheckOnRobotsTimeMs() );
+                checkOnRobots();
+            }
         } catch( InterruptedException e ) {
             e.printStackTrace();
         }
+    }
+
+    private boolean isDone() {
+        boolean isDone = robots.isEmpty();
+        if( isDone )
+            System.out.printf( "Controller: I'm done and I'm shutting down %n" );
+        return isDone;
     }
 
     public Function< Product.ProductType, Integer > getRecipe( Phase phase ) {
@@ -39,7 +49,7 @@ public class Controller implements Runnable {
                         case ATOMIC_ACCELERATOR:
                             return 1;
                         case ELECTRICITY:
-                            return 7;
+                            return 3;
                         default:
                             return 0;
                     }
@@ -57,7 +67,7 @@ public class Controller implements Runnable {
                         case DARK_MATTER:
                             return 10;
                         case FREE_RADICAL:
-                            return 7000;
+                            return 12;
                         default:
                             return 0;
                     }
@@ -66,12 +76,33 @@ public class Controller implements Runnable {
     }
 
     private void checkOnRobots() {
-        for( int i = 0; i < robots.size(); i++ ) {
-            robots.get( i ).whatsup();
-        }
+        List< Robot > doneRobots = new LinkedList<>();
+        for( Robot robot : robots )
+            if( robot.isDone() )
+                doneRobots.add( robot );
+            else
+                sortOutRobot( robot );
+        robots.removeAll( doneRobots );
     }
 
-    private int getRandomSleepTime() {
+    private void sortOutRobot( Robot robot ) {
+        if( robot.isDoneInThisPhase() ) // it can't be in the last one
+            setNextPhase( robot );
+        else
+            giveRobotResources( robot );
+    }
+
+    private void giveRobotResources( Robot robot ) {
+        System.out.printf( "Controller: giving robot %d resources %n", robot.getId() );
+    }
+
+    private void setNextPhase( Robot robot ) {
+        Phase robotNextPhase = Phase.values()[ robot.getCurrentPhase().ordinal() + 1 ];
+        System.out.printf( "Controller: setting robot %d's phase to %s %n", robot.getId(), robotNextPhase );
+        robot.setNextPhase( robotNextPhase, getRecipe( robotNextPhase ) );
+    }
+
+    private int getCheckOnRobotsTimeMs() {
         return random.nextInt( maxCheckOnRobotsTimeMs - minCheckOnRobotsTimeMs + 1 ) + minCheckOnRobotsTimeMs;
     }
 }
