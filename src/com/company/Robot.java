@@ -12,18 +12,21 @@ public class Robot implements Runnable {
     private Function< Product.ProductType, Integer > recipe;
     private Random random = new Random();
     private int cycleCount;
-    private boolean isDoneInThisPhase = false;
-    private boolean isDone;
+    private boolean[] hasIsDoneInPhaseBeenReported;
+    private boolean hasIsDoneBeenReported = false;
 
     public Robot( int id, Function< Product.ProductType, Integer > recipe ) {
         this.id = id;
         this.recipe = recipe;
+        hasIsDoneInPhaseBeenReported = new boolean[ Phase.values().length ];
+        for( int i = 0; i < hasIsDoneInPhaseBeenReported.length; i++ )
+            hasIsDoneInPhaseBeenReported[ i ] = false;
     }
 
     @Override
     public void run() {
         try {
-            while( !isDone )
+            while( !isDone() )
                 executeAWorkCycle();
         } catch( InterruptedException e ) {
             e.printStackTrace();
@@ -35,16 +38,20 @@ public class Robot implements Runnable {
     }
 
     public boolean isDoneInThisPhase() {
-        isDoneInThisPhase = currentPhase.ordinal() * 2 < cycleCount;
-        if( isDoneInThisPhase )
+        boolean isDoneInThisPhase = currentPhase.ordinal() * 2 < cycleCount;
+        if( isDoneInThisPhase && !hasIsDoneInPhaseBeenReported[ currentPhase.ordinal() ] ) {
             System.out.printf( "Robot %d: I'm done with phase %s %n", id, currentPhase );
+            hasIsDoneInPhaseBeenReported[ currentPhase.ordinal() ] = true;
+        }
         return isDoneInThisPhase;
     }
 
     public boolean isDone() {
-        isDone = isDoneInThisPhase && currentPhase.isLast();
-        if( isDone )
+        boolean isDone = isDoneInThisPhase() && currentPhase.isLast();
+        if( isDone && !hasIsDoneBeenReported ) {
+            hasIsDoneBeenReported = true;
             System.out.printf( "Robot %d: I'm done and I'm shutting down %n", id );
+        }
         return isDone;
     }
 

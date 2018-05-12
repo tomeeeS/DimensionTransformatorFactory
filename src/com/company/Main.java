@@ -9,11 +9,11 @@ public class Main {
     private static List< Robot > robots;
     private static Controller controller;
     private static Thread controllerThread;
-    private static int robotCount;
+    private static int robotsCount;
 
     public static void main( String[] args ) {
 //        readFile();
-        robotCount = 1;
+        robotsCount = 2;
         robotThreads = new LinkedList<>();
         robots = new LinkedList<>();
 
@@ -42,7 +42,7 @@ public class Main {
 
     private static void initRobots() {
         Robot robot;
-        for( int i = 0; i < robotCount; i++ ) {
+        for( int i = 0; i < robotsCount; i++ ) {
             robot = new Robot( i + 1, controller.getRecipe( Phase.getFirst() ) );
             robotThreads.add( new Thread( robot ) );
             robots.add( robot );
