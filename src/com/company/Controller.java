@@ -1,11 +1,8 @@
 package com.company;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
-
-import static com.company.Product.ProductType.*;
 
 /**
  * @author Sajti Tamás
@@ -33,6 +30,41 @@ public class Controller implements Runnable {
         }
     }
 
+    public Function< Product.ProductType, Integer > getRecipe( Phase phase ) {
+        return ( Product.ProductType productType ) -> {
+            switch( phase ) {
+                case ASSEMBLE_ACCELERATOR:
+                default:
+                    switch( productType ) {
+                        case ATOMIC_ACCELERATOR:
+                            return 1;
+                        case ELECTRICITY:
+                            return 7;
+                        default:
+                            return 0;
+                    }
+                case ASSEMBLE_DIMENSION_BREAKER:
+                    switch( productType ) {
+                        case MIRROR:
+                            return 4;
+                        case HAMMER:
+                            return 2;
+                        default:
+                            return 0;
+                    }
+                case BLEND_FUEL:
+                    switch( productType ) {
+                        case DARK_MATTER:
+                            return 10;
+                        case FREE_RADICAL:
+                            return 7000;
+                        default:
+                            return 0;
+                    }
+            }
+        };
+    }
+
     private void checkOnRobots() {
         for( int i = 0; i < robots.size(); i++ ) {
             robots.get( i ).whatsup();
@@ -41,27 +73,5 @@ public class Controller implements Runnable {
 
     private int getRandomSleepTime() {
         return random.nextInt( maxCheckOnRobotsTimeMs - minCheckOnRobotsTimeMs + 1 ) + minCheckOnRobotsTimeMs;
-    }
-
-    public Function< Phase, HashMap< Product.ProductType, Integer > > getRecipes() {
-        return ( Phase p ) -> {
-            HashMap< Product.ProductType, Integer > map = new HashMap<>();
-            switch ( p ) {
-                case ASSEMBLE_ACCELERATOR:
-                default:
-                    map.put( ATOMIC_ACCELERATOR, 1 );
-                    map.put( ELECTRICITY, 7 );
-                    break;
-                case ASSEMBLE_DIMENSION_BREAKER:
-                    map.put( MIRROR, 4 );
-                    map.put( HAMMER, 2 );
-                    break;
-                case BLEND_FUEL:
-                    map.put( DARK_MATTER, 10 );
-                    map.put( FREE_RADICAL, 7000 );
-                    break;
-            }
-            return map;
-        };
     }
 }

@@ -32,7 +32,7 @@ public class Main {
     private static void initRobots() {
         robotThreads = new ArrayList<>( 1 );
         robots = new ArrayList<>( 1 );
-        Robot robot = new Robot( controller.getRecipes() );
+        Robot robot = new Robot( controller.getRecipe( Phase.values()[ 0 ] ) );
         robotThreads.add( new Thread( robot ) );
         robots.add( robot );
     }
