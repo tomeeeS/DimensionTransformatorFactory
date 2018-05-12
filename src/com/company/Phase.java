@@ -25,4 +25,7 @@ public enum Phase {
         return maxRobotWorkingTimeMs;
     }
 
+    public static Phase getFirst() {
+        return values()[ 0 ];
+    }
 }

@@ -7,7 +7,7 @@ import java.util.function.Function;
  */
 public class Robot implements Runnable {
     private String id;
-    private Phase currentPhase = Phase.values()[ 0 ];
+    private Phase currentPhase = Phase.getFirst();
     private Function< Product.ProductType, Integer > recipe;
 
     public Robot( Function<  Product.ProductType, Integer > recipe ) {
