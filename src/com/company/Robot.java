@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -20,6 +21,22 @@ public class Robot implements Runnable {
     private boolean[] hasIsDoneInPhaseBeenReported;
     private boolean hasIsDoneBeenReported = false;
     private List< Product > products = new LinkedList<>();
+    private BiFunction< Phase, List< Product > ,List< Product >  > produce = ( phase, removableList ) ->
+        {
+            products.removeAll( removableList );
+            switch( phase ) {
+                case ASSEMBLE_ACCELERATOR:
+                    products.addAll( ProductFactory.create( 2, 2 ) );
+                    break;
+                case ASSEMBLE_DIMENSION_BREAKER:
+                    products.addAll( ProductFactory.create( 3, 1 ) );
+                    break;
+                case BLEND_FUEL:
+                    products.addAll( ProductFactory.create( 4, 2 ) );
+                    break;
+            }
+            return products;
+        };
 
     public Robot( int id, Function< Product.ProductType, Integer > recipe ) {
         this.id = id;
@@ -69,9 +86,9 @@ public class Robot implements Runnable {
         Arrays.stream( Product.ProductType.values() )
                 .forEach( productType -> removables.addAll( products.stream()
                         .filter( product -> product.isOfProductType( productType ) )
-                        .limit( recipe.apply( productType ) )
+                        .limit( this.recipe.apply( productType ) )
                         .collect( Collectors.toList() ) ) );
-        products.removeAll( removables );
+        produce.apply( currentPhase, removables );
 
         // robot advances to next phase
         currentPhase = robotNextPhase;

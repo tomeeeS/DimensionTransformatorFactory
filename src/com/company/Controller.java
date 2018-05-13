@@ -1,7 +1,6 @@
 package com.company;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +17,7 @@ public class Controller implements Runnable {
     private final List< Robot > robots;
     private Random random = new Random();
     private List< Map< Product.ProductType, Integer > > recipeData;
+    private final Object recipeLock = new Object();
 
     public Controller( int minCheckOnRobotsTimeMs, int maxCheckOnRobotsTimeMs, List< Robot > robots ) {
         this.minCheckOnRobotsTimeMs = minCheckOnRobotsTimeMs;
@@ -49,7 +49,11 @@ public class Controller implements Runnable {
     }
 
     public Function< Product.ProductType, Integer > getRecipe( Phase phase ) {
-        return ( Product.ProductType productType ) -> recipeData.get( phase.ordinal() ).getOrDefault( productType, 0 );
+        return ( Product.ProductType productType ) -> {
+            synchronized( recipeLock ) {
+                return recipeData.get( phase.ordinal() ).getOrDefault( productType, 0 );
+            }
+        };
     }
 
     private void checkOnRobots() {
