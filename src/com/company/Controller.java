@@ -2,6 +2,7 @@ package com.company;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.function.Function;
 
@@ -14,6 +15,7 @@ public class Controller implements Runnable {
     private final int maxCheckOnRobotsTimeMs;
     private final List< Robot > robots;
     private Random random = new Random();
+    private List< Map< Product.ProductType, Integer > > recipeData;
 
     public Controller( int minCheckOnRobotsTimeMs, int maxCheckOnRobotsTimeMs, List< Robot > robots ) {
         this.minCheckOnRobotsTimeMs = minCheckOnRobotsTimeMs;
@@ -33,6 +35,10 @@ public class Controller implements Runnable {
         }
     }
 
+    public void setRecipeData( List< Map< Product.ProductType, Integer > > recipeData ) {
+        this.recipeData = recipeData;
+    }
+
     private boolean isDone() {
         boolean isDone = robots.isEmpty();
         if( isDone )
@@ -41,38 +47,7 @@ public class Controller implements Runnable {
     }
 
     public Function< Product.ProductType, Integer > getRecipe( Phase phase ) {
-        return ( Product.ProductType productType ) -> {
-            switch( phase ) {
-                case ASSEMBLE_ACCELERATOR:
-                default:
-                    switch( productType ) {
-                        case ATOMIC_ACCELERATOR:
-                            return 1;
-                        case ELECTRICITY:
-                            return 3;
-                        default:
-                            return 0;
-                    }
-                case ASSEMBLE_DIMENSION_BREAKER:
-                    switch( productType ) {
-                        case MIRROR:
-                            return 4;
-                        case HAMMER:
-                            return 2;
-                        default:
-                            return 0;
-                    }
-                case BLEND_FUEL:
-                    switch( productType ) {
-                        case DARK_MATTER:
-                            return 10;
-                        case FREE_RADICAL:
-                            return 12;
-                        default:
-                            return 0;
-                    }
-            }
-        };
+        return ( Product.ProductType productType ) -> recipeData.get( phase.ordinal() ).getOrDefault( productType, 0 );
     }
 
     private void checkOnRobots() {
