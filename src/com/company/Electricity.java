@@ -6,5 +6,6 @@ public class Electricity extends Product {
     public Electricity( String name, double voltage ) {
         super( name );
         this.voltage = voltage;
+        productType = ProductType.ELECTRICITY;
     }
 }

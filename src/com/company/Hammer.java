@@ -6,5 +6,6 @@ public class Hammer extends Product {
     public Hammer( String name, int size ) {
         super( name );
         this.size = size;
+        productType = ProductType.HAMMER;
     }
 }

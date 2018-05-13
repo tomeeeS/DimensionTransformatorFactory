@@ -6,5 +6,6 @@ public class DarkMatter extends Product {
     public DarkMatter( String name, float depth ) {
         super( name );
         this.depth = depth;
+        productType = ProductType.DARK_MATTER;
     }
 }

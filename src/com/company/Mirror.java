@@ -6,5 +6,6 @@ public class Mirror extends Product {
     public Mirror( String name, char handleSymbol ) {
         super( name );
         this.handleSymbol = handleSymbol;
+        productType = ProductType.MIRROR;
     }
 }

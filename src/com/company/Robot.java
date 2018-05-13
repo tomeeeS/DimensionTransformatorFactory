@@ -1,5 +1,6 @@
 package com.company;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -9,6 +10,7 @@ import java.util.function.Function;
  * @author Sajti Tamás
  */
 public class Robot implements Runnable {
+
     private int id;
     private Phase currentPhase = Phase.getFirst();
     private Function< Product.ProductType, Integer > recipe;
@@ -16,7 +18,7 @@ public class Robot implements Runnable {
     private int cycleCount;
     private boolean[] hasIsDoneInPhaseBeenReported;
     private boolean hasIsDoneBeenReported = false;
-    private List<Product> products = new LinkedList<>();
+    private List< Product > products = new LinkedList<>();
 
     public Robot( int id, Function< Product.ProductType, Integer > recipe ) {
         this.id = id;
@@ -41,7 +43,7 @@ public class Robot implements Runnable {
     }
 
     public boolean isDoneInThisPhase() {
-        boolean isDoneInThisPhase = currentPhase.ordinal() * 2 < cycleCount;
+        boolean isDoneInThisPhase = isRecipeSatisfied();
         if( isDoneInThisPhase && !hasIsDoneInPhaseBeenReported[ currentPhase.ordinal() ] ) {
             System.out.printf( "Robot %d: I'm done with phase %s %n", id, currentPhase );
             hasIsDoneInPhaseBeenReported[ currentPhase.ordinal() ] = true;
@@ -58,7 +60,7 @@ public class Robot implements Runnable {
         return isDone;
     }
 
-    public void setNextPhase( Phase robotNextPhase, Function<Product.ProductType, Integer> recipe ) {
+    public void setNextPhase( Phase robotNextPhase, Function< Product.ProductType, Integer > recipe ) {
         currentPhase = robotNextPhase;
         this.recipe = recipe;
     }
@@ -67,8 +69,18 @@ public class Robot implements Runnable {
         return id;
     }
 
-    public void addProducts( List<Product> products ) {
+    public void addProducts( List< Product > products ) {
         this.products.addAll( products );
+    }
+
+    private boolean isRecipeSatisfied() {
+        return Arrays.stream( Product.ProductType.values() )
+                .map( productType -> doWeHaveThisMuchOfProduct( recipe.apply( productType ), productType ) )
+                .reduce( true, ( Boolean x, Boolean y ) -> x && y );
+    }
+
+    private boolean doWeHaveThisMuchOfProduct( Integer productCount, Product.ProductType productType ) {
+        return products.stream().filter( product -> product.isOfProductType( productType ) ).count() >= productCount;
     }
 
     private void executeAWorkCycle() throws InterruptedException {

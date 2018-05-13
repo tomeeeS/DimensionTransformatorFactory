@@ -5,6 +5,7 @@ package com.company;
  */
 public class Product {
     private String name;
+    protected ProductType productType;
 
     public enum ProductType {
         ATOMIC_ACCELERATOR,
@@ -17,5 +18,9 @@ public class Product {
 
     public Product( String name ) {
         this.name = name;
+    }
+
+    public boolean isOfProductType( ProductType productType ) {
+        return this.productType == productType;
     }
 }

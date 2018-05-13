@@ -6,5 +6,6 @@ public class AtomicAccelerator extends Product {
     public AtomicAccelerator( String name, byte code ) {
         super( name );
         this.code = code;
+        productType = ProductType.ATOMIC_ACCELERATOR;
     }
 }
