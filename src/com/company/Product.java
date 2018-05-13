@@ -14,4 +14,8 @@ public class Product {
         HAMMER,
         MIRROR
     }
+
+    public Product( String name ) {
+        this.name = name;
+    }
 }
