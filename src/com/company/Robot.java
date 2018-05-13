@@ -1,5 +1,7 @@
 package com.company;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
 
@@ -14,6 +16,7 @@ public class Robot implements Runnable {
     private int cycleCount;
     private boolean[] hasIsDoneInPhaseBeenReported;
     private boolean hasIsDoneBeenReported = false;
+    private List<Product> products = new LinkedList<>();
 
     public Robot( int id, Function< Product.ProductType, Integer > recipe ) {
         this.id = id;
@@ -50,7 +53,7 @@ public class Robot implements Runnable {
         boolean isDone = isDoneInThisPhase() && currentPhase.isLast();
         if( isDone && !hasIsDoneBeenReported ) {
             hasIsDoneBeenReported = true;
-            System.out.printf( "Robot %d: I'm done and I'm shutting down %n", id );
+            System.out.printf( "Robot %d: I'm done, shutting down %n", id );
         }
         return isDone;
     }
@@ -62,6 +65,10 @@ public class Robot implements Runnable {
 
     public int getId() {
         return id;
+    }
+
+    public void addProducts( List<Product> products ) {
+        this.products.addAll( products );
     }
 
     private void executeAWorkCycle() throws InterruptedException {

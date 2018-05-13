@@ -36,7 +36,7 @@ public class Controller implements Runnable {
     private boolean isDone() {
         boolean isDone = robots.isEmpty();
         if( isDone )
-            System.out.printf( "Controller: I'm done and I'm shutting down %n" );
+            System.out.printf( "Controller: I'm done, shutting down %n" );
         return isDone;
     }
 
@@ -77,11 +77,12 @@ public class Controller implements Runnable {
 
     private void checkOnRobots() {
         List< Robot > doneRobots = new LinkedList<>();
-        for( Robot robot : robots )
+        robots.forEach( robot -> {
             if( robot.isDone() )
                 doneRobots.add( robot );
             else
                 sortOutRobot( robot );
+        } );
         robots.removeAll( doneRobots );
     }
 
