@@ -1,10 +1,12 @@
 package com.company;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author Sajti Tamás
@@ -15,7 +17,6 @@ public class Robot implements Runnable {
     private Phase currentPhase = Phase.getFirst();
     private Function< Product.ProductType, Integer > recipe;
     private Random random = new Random();
-    private int cycleCount;
     private boolean[] hasIsDoneInPhaseBeenReported;
     private boolean hasIsDoneBeenReported = false;
     private List< Product > products = new LinkedList<>();
@@ -61,6 +62,18 @@ public class Robot implements Runnable {
     }
 
     public void setNextPhase( Phase robotNextPhase, Function< Product.ProductType, Integer > recipe ) {
+        // robot executed production
+        // loss of required products randomly
+        Collections.shuffle( products );
+        List< Product > removables = new LinkedList<>();
+        Arrays.stream( Product.ProductType.values() )
+                .forEach( productType -> removables.addAll( products.stream()
+                        .filter( product -> product.isOfProductType( productType ) )
+                        .limit( recipe.apply( productType ) )
+                        .collect( Collectors.toList() ) ) );
+        products.removeAll( removables );
+
+        // robot advances to next phase
         currentPhase = robotNextPhase;
         this.recipe = recipe;
     }
@@ -79,16 +92,17 @@ public class Robot implements Runnable {
                 .reduce( true, ( Boolean x, Boolean y ) -> x && y );
     }
 
-    private boolean doWeHaveThisMuchOfProduct( Integer productCount, Product.ProductType productType ) {
-        return products.stream().filter( product -> product.isOfProductType( productType ) ).count() >= productCount;
+    private boolean doWeHaveThisMuchOfProduct( Integer productCountNeeded, Product.ProductType productType ) {
+        long productCount = products.stream().filter( product -> product.isOfProductType( productType ) ).count();
+        boolean doWeHaveThisMuchOfProduct = productCount >= productCountNeeded;
+        if( !doWeHaveThisMuchOfProduct )
+            System.out.printf( "Robot %d: I don't have %d of %s, I have %d %n", id, productCountNeeded, productType, productCount );
+        return doWeHaveThisMuchOfProduct;
     }
 
     private void executeAWorkCycle() throws InterruptedException {
         int workingTimeMs = getWorkingTimeMs();
         Thread.sleep( workingTimeMs );
-        System.out.printf( "Robot %d: working for %d ms %n", id, workingTimeMs );
-
-        cycleCount++; // todo remove
     }
 
     private int getWorkingTimeMs() {

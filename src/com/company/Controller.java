@@ -1,5 +1,7 @@
 package com.company;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -69,7 +71,11 @@ public class Controller implements Runnable {
     }
 
     private void giveRobotResources( Robot robot ) {
-        System.out.printf( "Controller: giving robot %d resources %n", robot.getId() );
+        // we give the robot the same amount from each product
+        int productCount = robot.getCurrentPhase().ordinal() + 1;
+        Arrays.stream( Product.ProductType.values() )
+                .forEach( productType -> robot.addProducts( ProductFactory.create( productType.ordinal(), productCount ) ) );
+        System.out.printf( "Controller: giving robot %d resources: %d from everything %n", robot.getId(), productCount );
     }
 
     private void setNextPhase( Robot robot ) {

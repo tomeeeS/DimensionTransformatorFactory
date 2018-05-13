@@ -83,6 +83,7 @@ public class Main {
             for( int j = 0; j < ints.length; j+= 2 ) {
                 phaseRecipeData.put( Product.ProductType.values()[ Integer.parseInt( ints[ j ] ) ], Integer.parseInt( ints[ j + 1 ] ) );
             }
+            recipeData.add( phaseRecipeData );
         }
         controller.setRecipeData( recipeData );
     }
