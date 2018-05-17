@@ -6,13 +6,15 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Main {
+
+    public static final int CONTROLLER_MIN_CHECK_ON_ROBOTS_TIME_MS = 5;
+    public static final int CONTROLLER_MAX_CHECK_ON_ROBOTS_TIME_MS = 10;
 
     private static List< Thread > robotThreads = new LinkedList<>();
     private static List< Robot > robots = new LinkedList<>();
@@ -42,7 +44,7 @@ public class Main {
             robotsCount = Integer.parseInt( currentLine );
             initRobots();
             readRobotsStartingProducts( reader );
-            readPhaseCompletionSpecs( reader );
+            readPhaseRequirements( reader );
             while( ( currentLine = reader.readLine() ) != null ) {//while there is content on the current line
                 System.out.println( currentLine ); // print the current line
             }
@@ -67,25 +69,25 @@ public class Main {
         }
     }
 
-    private static void readPhaseCompletionSpecs( BufferedReader reader ) throws IOException {
+    private static void readPhaseRequirements( BufferedReader reader ) throws IOException {
         String currentLine;
         int phaseCount = Phase.values().length;
-        List< Map< Product.ProductType, Integer > > recipeData = new ArrayList<>( phaseCount );
+        CopyOnWriteArrayList< ConcurrentHashMap< Product.ProductType, Integer > > phaseRequirements = new CopyOnWriteArrayList<>();
         for( int i = 0; i < phaseCount; i++ ) {
-            Map< Product.ProductType, Integer > phaseRecipeData = new HashMap<>();
+            ConcurrentHashMap< Product.ProductType, Integer > phaseRequirement = new ConcurrentHashMap<>();
             currentLine = reader.readLine(); // in a line here we have pairs of product type ordinals and product counts.
-            // for those product types that weren't specified in the line, the robot has 0 of them at the start.
+            // for those product types that weren't specified in the line, the robot does not need any of them for that phase.
             if( currentLine == null )
                 inputFail();
             String[] ints = currentLine.split( " " );
             if( ints.length % 2 == 1 )
                 inputFail();
             for( int j = 0; j < ints.length; j+= 2 ) {
-                phaseRecipeData.put( Product.ProductType.values()[ Integer.parseInt( ints[ j ] ) ], Integer.parseInt( ints[ j + 1 ] ) );
+                phaseRequirement.put( Product.ProductType.values()[ Integer.parseInt( ints[ j ] ) ], Integer.parseInt( ints[ j + 1 ] ) );
             }
-            recipeData.add( phaseRecipeData );
+            phaseRequirements.add( phaseRequirement );
         }
-        controller.setRecipeData( recipeData );
+        Phase.setPhaseRequirements( phaseRequirements );
     }
 
     private static void inputFail() {
@@ -103,7 +105,7 @@ public class Main {
     }
 
     private static void initController() {
-        controller = new Controller( 5, 10, robots );
+        controller = new Controller( CONTROLLER_MIN_CHECK_ON_ROBOTS_TIME_MS, CONTROLLER_MAX_CHECK_ON_ROBOTS_TIME_MS, robots );
         controllerThread = new Thread( controller );
     }
 
@@ -116,7 +118,9 @@ public class Main {
     private static void initRobots() {
         Robot robot;
         for( int i = 0; i < robotsCount; i++ ) {
-            robot = new Robot( i + 1, controller.getRecipe( Phase.getFirst() ) );
+            robot = new Robot( i + 1 );
+            Phase phase = Phase.getFirst();
+            robot.setNextPhase( phase, controller.getRecipe( robot, phase ) );
             robotThreads.add( new Thread( robot ) );
             robots.add( robot );
         }

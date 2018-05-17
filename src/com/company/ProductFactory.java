@@ -16,16 +16,18 @@ public class ProductFactory {
         switch( productTypeIndex ) {
             case 0:
             default:
-                return new AtomicAccelerator( productName, (byte)randomInt );
-            case 1:
                 return new DarkMatter( productName, randomInt );
+            case 1:
+                return new DimensionBreaker( productName, (byte)randomInt );
             case 2:
-                return new Electricity( productName, randomInt );
+                return new DimensionTransformator( productName, randomInt );
             case 3:
                 return new FreeRadical( productName, randomInt > 25 );
             case 4:
-                return new Hammer( productName, randomInt );
+                return new TransformatorFuel( productName, randomInt );
             case 5:
+                return new Hammer( productName, randomInt );
+            case 6:
                 return new Mirror( productName, (char)randomInt );
         }
     } );
