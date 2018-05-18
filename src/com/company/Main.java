@@ -23,7 +23,7 @@ public class Main {
     private static int robotsCount;
     private static Path configPath;
 
-    public static void main( String[] args ) {
+    public static void main( String[] args ) throws IOException {
         initController();
         readFile( args );
 
@@ -37,7 +37,8 @@ public class Main {
         }
     }
 
-    private static void readFile( String[] args ) {
+    @GoodIo
+    public static void readFile( String[] args ) throws IOException {
         setConfigFilePath( args );
         try( BufferedReader reader = Files.newBufferedReader( configPath, Charset.forName( "UTF-8" ) ) ) {
             String currentLine = reader.readLine();
@@ -49,7 +50,8 @@ public class Main {
                 System.out.println( currentLine ); // print the current line
             }
         } catch( IOException ex ) {
-            ex.printStackTrace(); //handle an exception here
+            inputFail();
+            throw( ex ); //handle an exception here
         }
     }
 
@@ -104,7 +106,7 @@ public class Main {
         configPath = Paths.get( configPathString );
     }
 
-    private static void initController() {
+    public static void initController() {
         controller = new Controller( CONTROLLER_MIN_CHECK_ON_ROBOTS_TIME_MS, CONTROLLER_MAX_CHECK_ON_ROBOTS_TIME_MS, robots );
         controllerThread = new Thread( controller );
     }
