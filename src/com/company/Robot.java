@@ -22,12 +22,12 @@ public class Robot implements Runnable {
     private final Object phaseLock = new Object();
     private final Object idLock = new Object();
     private final Object doneLock = new Object();
-    private int id;
+    private final int id;
     private Phase currentPhase;
     private Function< Product.ProductType, Pair< Integer, Integer > > recipe; // gyártó lambda
-    private Random random = new Random();
-    private List< Product > products = new LinkedList<>();
-    private BiFunction< Phase, List< Product >, List< Product > > produce = ( phase, ingredients ) ->   // a recipe szerint gyárt
+    private final Random random = new Random();
+    private final List< Product > products = new LinkedList<>();
+    private final BiFunction< Phase, List< Product >, List< Product > > produce = ( phase, ingredients ) ->   // a recipe szerint gyárt
     {
         synchronized( productsLock ) {
             products.removeAll( ingredients );

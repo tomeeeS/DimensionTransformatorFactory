@@ -117,19 +117,18 @@ public class Controller implements Runnable {
 
     private void giveRobotResources( Robot robot ) {
         // we give the robot the same amount from each product
-        int productCount = robot.getCurrentPhase().ordinal() + 1;
+        int productAmount = robot.getCurrentPhase().ordinal() + 1;
         Arrays.stream( Product.ProductType.values() )
-                .forEach( productType -> {
-                    int productCountGiven = recipes.apply( robot.getId() ).apply( robot.getCurrentPhase() ).apply( productType ).getKey() > 0 ? productCount : 0;
-                    robot.addProducts( ProductFactory.create( productType.ordinal(), productCountGiven ) );
-                    if( productCountGiven > 0 )
-                        System.out.printf( "Controller: giving robot %d resources: %d %s%n", robot.getId(), productCount, productType );
-                } );
+            .forEach( productType -> {
+                int productAmountGiven = recipes.apply( robot.getId() ).apply( robot.getCurrentPhase() ).apply( productType ).getKey() > 0 ? productAmount : 0;
+                robot.addProducts( ProductFactory.create( productType.ordinal(), productAmountGiven ) );
+                if( productAmountGiven > 0 )
+                    System.out.printf( "Controller: giving robot %d resources: %d %s%n", robot.getId(), productAmount, productType );
+            } );
     }
 
     private void setNextPhase( Robot robot ) {
         Phase robotNextPhase = Phase.values()[ robot.getCurrentPhase().ordinal() + 1 ];
-        System.out.printf( "Controller: setting robot %d's phase to %s %n", robot.getId(), robotNextPhase );
         robot.setNextPhase( robotNextPhase, getRecipe( robot, robotNextPhase ) );
     }
 

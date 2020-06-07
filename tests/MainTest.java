@@ -23,17 +23,7 @@ Setting up JUnit with IntelliJ IDEA
     - Keep hitting OK until you're back to the code.
 3. Write your first unit test
     - Right-click on your test folder, "New > Java Class", call it whatever, e.g. MyFirstTest.
-    - Write a JUnit test -- here's mine:
-
-            import org.junit.Assert;
-            import org.junit.Test;
-
-            public class MyFirstTest {
-                @Test
-                public void firstTest() {
-                    Assert.assertTrue(true);
-                }
-            }
+    - Write a JUnit test
 4. Run your tests
     - Right-click on your test folder and choose "Run 'All Tests'".  Presto, testo.
     - To run again, you can either hit the green "Play"-style button that appeared in the new section that popped on the bottom of your window, or you can hit the green "Play"-style button in the top bar.

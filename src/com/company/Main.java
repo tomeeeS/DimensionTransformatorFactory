@@ -51,14 +51,14 @@ public class Main {
             }
         } catch( IOException ex ) {
             inputFail();
-            throw( ex ); //handle an exception here
+            throw( ex );
         }
     }
 
     private static void readRobotsStartingProducts( BufferedReader reader ) throws IOException {
         String currentLine;
         for( int i = 0; i < robotsCount; i++ ) {
-            currentLine = reader.readLine(); // in a line here we have pairs of product type ordinals and product counts.
+            currentLine = reader.readLine(); // in a line here we have pairs of product type ordinals and product amounts.
             // for those product types that weren't specified in the line, the robot has 0 of them at the start.
             if( currentLine == null )
                 inputFail();
@@ -77,7 +77,7 @@ public class Main {
         CopyOnWriteArrayList< ConcurrentHashMap< Product.ProductType, Integer > > phaseRequirements = new CopyOnWriteArrayList<>();
         for( int i = 0; i < phaseCount; i++ ) {
             ConcurrentHashMap< Product.ProductType, Integer > phaseRequirement = new ConcurrentHashMap<>();
-            currentLine = reader.readLine(); // in a line here we have pairs of product type ordinals and product counts.
+            currentLine = reader.readLine(); // in a line here we have pairs of product type ordinals and product amounts.
             // for those product types that weren't specified in the line, the robot does not need any of them for that phase.
             if( currentLine == null )
                 inputFail();
@@ -121,8 +121,8 @@ public class Main {
         Robot robot;
         for( int i = 0; i < robotsCount; i++ ) {
             robot = new Robot( i + 1 );
-            Phase phase = Phase.getFirst();
-            robot.setNextPhase( phase, controller.getRecipe( robot, phase ) );
+            Phase firstPhase = Phase.getFirst();
+            robot.setNextPhase( firstPhase, controller.getRecipe( robot, firstPhase ) );
             robotThreads.add( new Thread( robot ) );
             robots.add( robot );
         }
