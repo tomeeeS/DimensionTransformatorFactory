@@ -2,7 +2,7 @@ package com.company;
 
 public class TransformatorFuel extends Product {
 
-    private double volume;
+    private final double volume;
 
     public TransformatorFuel( String name, double volume ) {
         super( name );

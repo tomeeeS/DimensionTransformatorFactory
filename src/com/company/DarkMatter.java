@@ -1,7 +1,7 @@
 package com.company;
 
 public class DarkMatter extends Product {
-    private float depth;
+    private final float depth;
 
     public DarkMatter( String name, float depth ) {
         super( name );

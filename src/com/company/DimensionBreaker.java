@@ -2,7 +2,7 @@ package com.company;
 
 public class DimensionBreaker extends Product {
 
-    private byte code;
+    private final byte code;
 
     public DimensionBreaker( String name, byte code ) {
         super( name );

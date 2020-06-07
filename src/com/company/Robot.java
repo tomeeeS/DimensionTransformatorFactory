@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -18,7 +17,6 @@ import javafx.util.Pair;
  */
 public class Robot implements Runnable {
 
-    private final Object productsLock = new Object();
     private final Object phaseLock = new Object();
     private final Object idLock = new Object();
     private final Object doneLock = new Object();
@@ -27,9 +25,8 @@ public class Robot implements Runnable {
     private Function< Product.ProductType, Pair< Integer, Integer > > recipe; // gyártó lambda
     private final Random random = new Random();
     private final List< Product > products = new LinkedList<>();
-    private final BiFunction< Phase, List< Product >, List< Product > > produce = ( phase, ingredients ) ->   // a recipe szerint gyárt
-    {
-        synchronized( productsLock ) {
+    private final BiFunction< Phase, List< Product >, List< Product > > produce = ( phase, ingredients ) -> {  // a recipe szerint gyárt
+        synchronized( products ) {
             products.removeAll( ingredients );
             List< Product > newProducts = new ArrayList<>( 1 );
             Arrays.stream( Product.ProductType.values() ).forEach( productType -> newProducts.addAll( ProductFactory.create( productType.ordinal(), recipe.apply( productType ).getValue() ) ) );
@@ -85,16 +82,9 @@ public class Robot implements Runnable {
     }
 
     public void addProducts( List< Product > products ) {
-        synchronized( productsLock ) {
+        synchronized( this.products ) {
             this.products.addAll( products );
         }
-    }
-
-    public boolean isPhaseRequirementSatisfied() {
-        ConcurrentHashMap< Product.ProductType, Integer > phaseRequirement = getCurrentPhase().getPhaseRequirement();
-        return Arrays.stream( Product.ProductType.values() )
-                .map( productType -> doWeHaveThisMuchOfProduct( phaseRequirement.getOrDefault( productType, 0 ), productType ) )
-                .reduce( true, ( Boolean x, Boolean y ) -> x && y );
     }
 
     public boolean getIsDone() {
@@ -106,34 +96,53 @@ public class Robot implements Runnable {
     private void produce() {
         // robot executed production
         // it loses required products in random order
-        synchronized( productsLock ) {
+        synchronized( products ) {
             Collections.shuffle( products );
             List< Product > ingredients = new LinkedList<>();
             Arrays.stream( Product.ProductType.values() )
-                    .forEach( productType ->
-                            ingredients.addAll( products.stream()
-                                    .filter( product -> product.isOfProductType( productType ) )
-                                    .limit( recipe.apply( productType ).getKey() )
-                                    .collect( Collectors.toList() ) ) );
+                .forEach( productType ->
+                    ingredients.addAll(
+                        products.stream()
+                        .filter( product -> product.isOfProductType( productType ) )
+                        .limit( recipe.apply( productType ).getKey() )
+                        .collect( Collectors.toList() )
+                    ) );
             produce.apply( getCurrentPhase(), ingredients );
         }
     }
 
+    public boolean isPhaseRequirementSatisfied() {
+        Pair< Product.ProductType, Integer > phaseRequirement = getCurrentPhase().getPhaseRequirement();
+        return isRequirementSatisfied(
+            productType -> {
+                if( phaseRequirement.getKey() == productType)
+                    return phaseRequirement.getValue();
+                else
+                    return 0;
+            }
+        );
+    }
+
     private boolean isRecipeRequirementSatisfied() {
+        return isRequirementSatisfied(
+            productType -> recipe.apply( productType ).getKey());
+    }
+
+    private boolean isRequirementSatisfied( Function< Product.ProductType,Integer > productCountNeeded ) {
         return Arrays.stream( Product.ProductType.values() )
-                .map( productType -> doWeHaveThisMuchOfProduct( recipe.apply( productType ).getKey(), productType ) )
+                .map( productType -> doWeHaveThisMuchOfProduct( productCountNeeded.apply( productType ), productType ) )
                 .reduce( true, ( Boolean x, Boolean y ) -> x && y );
     }
-    // does the robot's product list satisfy the phase's requirement
 
+    // does the robot's product list satisfy the phase's requirement
     private boolean doWeHaveThisMuchOfProduct( Integer productCountNeeded, Product.ProductType productType ) {
         long productCount;
-        synchronized( productsLock ) {
+        synchronized( products ) {
             productCount = products.stream().filter( product -> product.isOfProductType( productType ) ).count();
         }
         boolean doWeHaveThisMuchOfProduct = productCount >= productCountNeeded;
         if( !doWeHaveThisMuchOfProduct )
-            System.out.printf( "Robot %d: I don't have %d of %s, I have %d %n", getId(), productCountNeeded, productType, productCount );
+            System.out.printf( "Robot %d: %s: %d/%d %n", getId(), productType, productCount, productCountNeeded );
         return doWeHaveThisMuchOfProduct;
     }
 

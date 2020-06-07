@@ -1,7 +1,7 @@
 package com.company;
 
 public class Mirror extends Product {
-    private char handleSymbol;
+    private final char handleSymbol;
 
     public Mirror( String name, char handleSymbol ) {
         super( name );

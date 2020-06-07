@@ -1,7 +1,8 @@
 package com.company;
 
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import javafx.util.Pair;
 
 /**
  * @author Sajti Tamás
@@ -12,7 +13,7 @@ public enum Phase {
     BLEND_FUEL( 7, 9 ), // dark matter, free radicals
     INTEGRATE_DIMENSION_TRANSFORMATOR( 16, 21 ); // dimension breaker, transformator fuel
 
-    private static CopyOnWriteArrayList< ConcurrentHashMap< Product.ProductType, Integer > > phaseRequirements;
+    private static CopyOnWriteArrayList< Pair< Product.ProductType, Integer > > phaseRequirements;
     private final int minRobotWorkingTimeMs;
     private final int maxRobotWorkingTimeMs;
 
@@ -21,11 +22,11 @@ public enum Phase {
         this.maxRobotWorkingTimeMs = maxRobotWorkingTimeMs;
     }
 
-    public static void setPhaseRequirements( CopyOnWriteArrayList< ConcurrentHashMap< Product.ProductType, Integer > > phaseRequirements ) {
+    public static void setPhaseRequirements( CopyOnWriteArrayList< Pair< Product.ProductType, Integer > > phaseRequirements ) {
         Phase.phaseRequirements = phaseRequirements;
     }
 
-    public ConcurrentHashMap< Product.ProductType, Integer > getPhaseRequirement() {
+    public Pair< Product.ProductType, Integer > getPhaseRequirement() {
         return phaseRequirements.get( ordinal() );
     }
 

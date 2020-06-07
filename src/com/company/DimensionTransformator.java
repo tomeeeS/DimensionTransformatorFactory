@@ -6,7 +6,7 @@ import javafx.util.Pair;
 
 public class DimensionTransformator extends Product {
 
-    private Pair< Integer, Integer > fuelAndDimensionBreaker;
+    private final Pair< Integer, Integer > fuelAndDimensionBreaker;
     private List< DimensionBreaker > dimensionBreakers;
 
     public DimensionTransformator( String productName, int randomInt ) {

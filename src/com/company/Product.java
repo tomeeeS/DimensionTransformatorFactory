@@ -5,7 +5,7 @@ package com.company;
  */
 public class Product {
 
-    private String name;
+    private final String name;
     protected ProductType productType;
 
     public enum ProductType {
