@@ -9,18 +9,11 @@ import javafx.util.Pair;
  */
 public enum Phase {
 
-    ASSEMBLE_DIMENSION_BREAKER( 10, 18 ), // mirror, hammer
-    BLEND_FUEL( 7, 9 ), // dark matter, free radicals
-    INTEGRATE_DIMENSION_TRANSFORMATOR( 16, 21 ); // dimension breaker, transformator fuel
+    ASSEMBLE_DIMENSION_BREAKER(), // mirror, hammer
+    BLEND_FUEL( ), // dark matter, free radicals
+    INTEGRATE_DIMENSION_TRANSFORMATOR(); // dimension breaker, transformator fuel
 
     private static CopyOnWriteArrayList< Pair< Product.ProductType, Integer > > phaseRequirements;
-    private final int minRobotWorkingTimeMs;
-    private final int maxRobotWorkingTimeMs;
-
-    Phase( int minRobotWorkingTimeMs, int maxRobotWorkingTimeMs ) {
-        this.minRobotWorkingTimeMs = minRobotWorkingTimeMs;
-        this.maxRobotWorkingTimeMs = maxRobotWorkingTimeMs;
-    }
 
     public static void setPhaseRequirements( CopyOnWriteArrayList< Pair< Product.ProductType, Integer > > phaseRequirements ) {
         Phase.phaseRequirements = phaseRequirements;
@@ -31,11 +24,11 @@ public enum Phase {
     }
 
     public int getMinRobotWorkingTimeMs() {
-        return minRobotWorkingTimeMs;
+        return 15;
     }
 
     public int getMaxRobotWorkingTimeMs() {
-        return maxRobotWorkingTimeMs;
+        return 30;
     }
 
     public static Phase getFirst() {

@@ -18,8 +18,6 @@ import javafx.util.Pair;
 public class Robot implements Runnable {
 
     private final Object phaseLock = new Object();
-    private final Object idLock = new Object();
-    private final Object doneLock = new Object();
     private final int id;
     private Phase currentPhase;
     private Function< Product.ProductType, Pair< Integer, Integer > > recipe; // gyártó lambda
@@ -35,12 +33,10 @@ public class Robot implements Runnable {
             return products;
         }
     };
-    private boolean isDone = false;
+    private volatile boolean isDone = false;
 
     public Robot( int id ) {
-        synchronized( idLock ) {
-            this.id = id;
-        }
+        this.id = id;
     }
 
     @Override
@@ -54,11 +50,9 @@ public class Robot implements Runnable {
     }
 
     public void setDone( boolean isDone ) {
-        synchronized( doneLock ) {
-            this.isDone = isDone;
-            if( this.isDone )
-                System.out.printf( "Robot %d: I'm done, shutting down %n", getId() );
-        }
+        this.isDone = isDone;
+        if( this.isDone )
+            System.out.printf( "Robot %d: I'm done, shutting down %n", getId() );
     }
 
     public Phase getCurrentPhase() {
@@ -76,9 +70,7 @@ public class Robot implements Runnable {
     }
 
     public int getId() {
-        synchronized( idLock ) {
-            return id;
-        }
+        return id;
     }
 
     public void addProducts( List< Product > products ) {
@@ -88,9 +80,7 @@ public class Robot implements Runnable {
     }
 
     public boolean getIsDone() {
-        synchronized( doneLock ) {
-            return isDone;
-        }
+        return isDone;
     }
 
     private void produce() {

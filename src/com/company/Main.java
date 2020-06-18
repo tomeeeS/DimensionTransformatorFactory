@@ -12,30 +12,33 @@ import javafx.util.Pair;
 
 public class Main {
 
-    private static final List< Thread > robotThreads = new LinkedList<>();
-    private static final List< Robot > robots = new LinkedList<>();
+    private static List< Thread > robotThreads = new LinkedList<>();
+    private static List< Robot > robots = new LinkedList<>();
     private static Controller controller;
     private static Thread controllerThread;
-    private static int robotsCount;
+    private static final int robotsCount = 200;
     private static Path configPath;
 
-    public static void main( String[] args ) throws IOException {
-        initController();
-        readFile( args );
+    public static void main( String[] args ) throws IOException, InterruptedException {
+        for(int i = 0; i < 100; ++i) {
+            initController();
+            readFile( args );
 
-        startThreads();
+            startThreads();
 
-        long start = System.nanoTime();
-        try {
-            controllerThread.join();
-            for( Thread t : robotThreads )
-                t.join();
-        } catch( InterruptedException e ) {
-            e.printStackTrace();
+            long start = System.nanoTime();
+            try {
+                controllerThread.join();
+                for( Thread t : robotThreads )
+                    t.join();
+            } catch( InterruptedException e ) {
+                e.printStackTrace();
+            }
+            long end = System.nanoTime();
+            System.out.println();
+            System.out.println( "#" + i + ":  " + TimeUnit.NANOSECONDS.toMillis( end - start ) + "ms" );
+            Thread.sleep( 500 );
         }
-        long end = System.nanoTime();
-        System.out.println();
-        System.out.println( TimeUnit.NANOSECONDS.toMillis(end - start) + "ms");
     }
 
     @GoodIo
@@ -43,7 +46,7 @@ public class Main {
 //        setConfigFilePath( args );
 //        try( BufferedReader reader = Files.newBufferedReader( configPath, StandardCharsets.UTF_8 ) ) {
 //            String currentLine = reader.readLine();
-            robotsCount = 100;//Integer.parseInt( currentLine );
+            //Integer.parseInt( currentLine );
             initRobots();
             readRobotsStartingProducts( null );
             readPhaseRequirements( null );
@@ -112,6 +115,8 @@ public class Main {
 //    }
 
     public static void initController() {
+        robotThreads = new LinkedList<>();
+        robots = new LinkedList<>();
         controller = new Controller( robots );
         controllerThread = new Thread( controller );
     }

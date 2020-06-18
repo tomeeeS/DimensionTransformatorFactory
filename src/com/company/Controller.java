@@ -67,6 +67,7 @@ public class Controller implements Runnable {
     public void run() {
         try {
             while( !isDone() ) {
+                //noinspection BusyWait
                 Thread.sleep( getCheckOnRobotsTimeMs() );
                 checkOnRobots();
             }
@@ -105,7 +106,7 @@ public class Controller implements Runnable {
     }
 
     private void sortOutRobot( Robot robot ) {
-        if( isDoneInPhase( robot ) ) // it can't be in the last one
+        if( isDoneInPhase( robot ) && !robot.getCurrentPhase().isLast() ) // it can't be in the last one
             setNextPhase( robot );
         else
             giveRobotResources( robot );
