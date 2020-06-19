@@ -23,10 +23,12 @@ public enum Phase {
         return phaseRequirements.get( ordinal() );
     }
 
+    // values in the range 1-10 slow the program down (considerably)
     public int getMinRobotWorkingTimeMs() {
         return 15;
     }
 
+    // values 40 or more result in slowdown too
     public int getMaxRobotWorkingTimeMs() {
         return 30;
     }

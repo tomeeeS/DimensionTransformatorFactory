@@ -42,7 +42,7 @@ public class Robot implements Runnable {
     @Override
     public void run() {
         try {
-            while( !getIsDone() )
+            while( !isDone() )
                 executeAWorkCycle();
         } catch( InterruptedException e ) {
             e.printStackTrace();
@@ -79,7 +79,7 @@ public class Robot implements Runnable {
         }
     }
 
-    public boolean getIsDone() {
+    public boolean isDone() {
         return isDone;
     }
 
