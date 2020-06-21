@@ -5,9 +5,9 @@ import com.company.product.Product;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Phaser;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -22,13 +22,12 @@ public class Controller implements Runnable {
     public static final int ACTION_QUEUE_CAPACITY = 1000;
 
     private List< Robot > robots;
-    private final CyclicBarrier phaseBarrier;
     // waiting queue for robots to get products
     private final BlockingQueue<Robot> actionQueue = new LinkedBlockingQueue<>( ACTION_QUEUE_CAPACITY );
     private final Runnable phaseAction = () -> {
         try {
             System.out.println("phase done");
-            Thread.sleep( 700 );
+            Thread.sleep( 100 );
         } catch( InterruptedException e ) {
             e.printStackTrace();
         }
@@ -75,11 +74,12 @@ public class Controller implements Runnable {
             };
     private volatile boolean isDone = false;
     private final int robotsCount;
-    private final CountDownLatch doneLatch;
+    private final Phaser doneLatch;
+    private final CyclicBarrier phaseBarrier;
 
     public Controller( int robotsCount ) {
         this.robotsCount = robotsCount;
-        doneLatch = new CountDownLatch( robotsCount );
+        doneLatch = new Phaser( 1 + robotsCount );
         phaseBarrier = new CyclicBarrier( robotsCount, phaseAction );
     }
 
@@ -91,14 +91,14 @@ public class Controller implements Runnable {
     public void run() {
         while( !isDone ) {
             try {
-                Robot robot = actionQueue.poll(2, TimeUnit.SECONDS);
+                Robot robot = actionQueue.poll(200, TimeUnit.MILLISECONDS);
                 if( robot != null ) {
                     giveRobotResources( robot );
                     synchronized( robot ) {
                         robot.notify();
                     }
                 } else {
-                    doneLatch.await();
+                    doneLatch.arriveAndAwaitAdvance();
                     isDone = true;
                 }
             } catch( InterruptedException e ) {
@@ -108,7 +108,7 @@ public class Controller implements Runnable {
         System.out.printf( "Controller: I'm done, shutting down %n" );
     }
 
-    public CountDownLatch getDoneLatch() {
+    public Phaser getDoneLatch() {
         return doneLatch;
     }
 

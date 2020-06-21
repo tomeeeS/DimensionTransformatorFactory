@@ -15,7 +15,7 @@ public class Main {
     private static List< Robot > robots = new LinkedList<>();
     private static Controller controller;
     private static Thread controllerThread;
-    private static final int robotsCount = 500;
+    private static final int robotsCount = 50;
 
     public static void main( String[] args ) throws InterruptedException {
         // TODO run these concurrently, cancel on fail (timeout for a task)

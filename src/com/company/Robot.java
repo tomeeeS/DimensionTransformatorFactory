@@ -167,7 +167,7 @@ public class Robot implements Runnable {
         }
         if( getCurrentPhase().isLast() ) {
             isDone = true;
-            controller.getDoneLatch().countDown();
+            controller.getDoneLatch().arrive();
         } else
             setNextPhase();
     }
