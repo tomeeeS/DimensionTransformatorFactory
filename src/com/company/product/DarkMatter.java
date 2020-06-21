@@ -1,4 +1,6 @@
-package com.company;
+package com.company.product;
+
+import com.company.product.Product;
 
 public class DarkMatter extends Product {
     private final float depth;

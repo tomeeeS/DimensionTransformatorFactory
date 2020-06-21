@@ -1,5 +1,7 @@
 package com.company;
 
+import com.company.product.Product;
+
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javafx.util.Pair;
@@ -38,6 +40,6 @@ public enum Phase {
     }
 
     public boolean isLast() {
-        return this == INTEGRATE_DIMENSION_TRANSFORMATOR;
+        return this == values()[values().length - 1];
     }
 }

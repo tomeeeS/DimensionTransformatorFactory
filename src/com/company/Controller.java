@@ -1,9 +1,14 @@
 package com.company;
 
+import com.company.product.Product;
+
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import javafx.util.Pair;
@@ -11,12 +16,23 @@ import javafx.util.Pair;
 /**
  * @author Sajti Tamás
  */
+@SuppressWarnings("ALL")
 public class Controller implements Runnable {
 
-    public static final int CONTROLLER_MIN_CHECK_ON_ROBOTS_TIME_MS = 1;
-    public static final int CONTROLLER_MAX_CHECK_ON_ROBOTS_TIME_MS = 2;
+    public static final int ACTION_QUEUE_CAPACITY = 1000;
 
-    private final List< Robot > robots;
+    private List< Robot > robots;
+    private final CyclicBarrier phaseBarrier;
+    // waiting queue for robots to get products
+    private final BlockingQueue<Robot> actionQueue = new LinkedBlockingQueue<>( ACTION_QUEUE_CAPACITY );
+    private final Runnable phaseAction = () -> {
+        try {
+            System.out.println("phase done");
+            Thread.sleep( 700 );
+        } catch( InterruptedException e ) {
+            e.printStackTrace();
+        }
+    };
     // the returned pair's first element is the required count of products of that type, the second is the produced count
     private final Function< Phase, Function< Product.ProductType, Pair< Integer, Integer > > > recipes =
             phase -> productType -> {
@@ -30,7 +46,7 @@ public class Controller implements Runnable {
                                 case HAMMER:
                                     return new Pair<>( 3, 0 );
                                 case MIRROR:
-                                    return new Pair<>( 3, 0 );
+                                    return new Pair<>( 2, 0 );
                             }
                             break;
                         case BLEND_FUEL:
@@ -40,7 +56,7 @@ public class Controller implements Runnable {
                                 case FREE_RADICAL:
                                     return new Pair<>( 5, 0 );
                                 case DARK_MATTER:
-                                    return new Pair<>( 6, 0 );
+                                    return new Pair<>( 4, 0 );
                             }
                             break;
                         case INTEGRATE_DIMENSION_TRANSFORMATOR:
@@ -48,69 +64,74 @@ public class Controller implements Runnable {
                                 case DIMENSION_TRANSFORMATOR:
                                     return new Pair<>( 0, 1 );
                                 case TRANSFORMATOR_FUEL:
-                                    return new Pair<>( 11, 0 );
+                                    return new Pair<>( 4, 0 );
                                 case DIMENSION_BREAKER:
-                                    return new Pair<>( 10, 0 );
+                                    return new Pair<>( 4, 0 );
                             }
                             break;
                     }
                     return new Pair<>( 0, 0 );
                 }
             };
-    private final Random random = new Random();
+    private volatile boolean isDone = false;
+    private final int robotsCount;
+    private final CountDownLatch doneLatch;
 
-    public Controller( List< Robot > robots ) {
+    public Controller( int robotsCount ) {
+        this.robotsCount = robotsCount;
+        doneLatch = new CountDownLatch( robotsCount );
+        phaseBarrier = new CyclicBarrier( robotsCount, phaseAction );
+    }
+
+    public void setRobots( List< Robot > robots ) {
         this.robots = robots;
     }
 
     @Override
     public void run() {
-        try {
-            while( !isDone() ) {
-                //noinspection BusyWait
-                Thread.sleep( getCheckOnRobotsTimeMs() );
-                checkOnRobots();
+        while( !isDone ) {
+            try {
+                Robot robot = actionQueue.poll(2, TimeUnit.SECONDS);
+                if( robot != null ) {
+                    giveRobotResources( robot );
+                    synchronized( robot ) {
+                        robot.notify();
+                    }
+                } else {
+                    doneLatch.await();
+                    isDone = true;
+                }
+            } catch( InterruptedException e ) {
+                e.printStackTrace();
             }
-            System.out.printf( "Controller: I'm done, shutting down %n" );
-        } catch( InterruptedException e ) {
-            e.printStackTrace();
         }
+        System.out.printf( "Controller: I'm done, shutting down %n" );
+    }
+
+    public CountDownLatch getDoneLatch() {
+        return doneLatch;
     }
 
     public Function< Product.ProductType, Pair< Integer, Integer > > getRecipe( Phase phase ) {
         return recipes.apply( phase );
     }
 
-    public boolean isDoneInPhase( Robot robot ) {
-        return robot.isPhaseRequirementSatisfied();
+    public CyclicBarrier getPhaseBarrier() {
+        return phaseBarrier;
     }
 
-    public boolean isDone( Robot robot ) {
-        return isDoneInPhase( robot ) && robot.getCurrentPhase().isLast();
+    public void askProducts( Robot robot ) {
+        try {
+            actionQueue.put( robot );
+        } catch( InterruptedException e ) {
+            e.printStackTrace();
+        }
     }
 
     private boolean isDone() {
         return robots.isEmpty();
     }
 
-    private void checkOnRobots() {
-        List< Robot > doneRobots = new LinkedList<>();
-        robots.forEach( robot -> {
-            if( isDone( robot ) ) {
-                doneRobots.add( robot );
-                robot.setDone( true );
-            } else
-                sortOutRobot( robot );
-        } );
-        robots.removeAll( doneRobots );
-    }
-
-    private void sortOutRobot( Robot robot ) {
-        if( isDoneInPhase( robot ) && !robot.getCurrentPhase().isLast() ) // it can't be in the last one
-            setNextPhase( robot );
-        else
-            giveRobotResources( robot );
-    }
 
     private void giveRobotResources( Robot robot ) {
         // we give the robot the same amount from each product
@@ -124,13 +145,4 @@ public class Controller implements Runnable {
             } );
     }
 
-    private void setNextPhase( Robot robot ) {
-        Phase robotNextPhase = Phase.values()[ robot.getCurrentPhase().ordinal() + 1 ];
-        robot.setNextPhase( robotNextPhase, getRecipe( robotNextPhase ) );
-    }
-
-    private int getCheckOnRobotsTimeMs() {
-        return random.nextInt( CONTROLLER_MAX_CHECK_ON_ROBOTS_TIME_MS - CONTROLLER_MIN_CHECK_ON_ROBOTS_TIME_MS + 1 )
-            + CONTROLLER_MIN_CHECK_ON_ROBOTS_TIME_MS;
-    }
 }

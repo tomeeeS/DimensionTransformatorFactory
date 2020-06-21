@@ -1,4 +1,3 @@
-import com.company.GoodIo;
 import com.company.Main;
 
 import org.junit.Assert;

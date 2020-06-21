@@ -1,6 +1,7 @@
 package com.company;
 
-import java.io.IOException;
+import com.company.product.Product;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -14,36 +15,44 @@ public class Main {
     private static List< Robot > robots = new LinkedList<>();
     private static Controller controller;
     private static Thread controllerThread;
-    private static final int robotsCount = 200;
+    private static final int robotsCount = 500;
 
-    public static void main( String[] args ) throws IOException, InterruptedException {
-        for(int i = 0; i < 100; ++i) {
+    public static void main( String[] args ) throws InterruptedException {
+        // TODO run these concurrently, cancel on fail (timeout for a task)
+        for( int i = 0; i < 100; ++i ) {
+            long start = System.nanoTime();
             initController();
             initRobots();
+            controller.setRobots( robots );
+
             giveRobotsStartingProducts();
             initPhaseRequirements();
 
             startThreads();
 
-            long start = System.nanoTime();
-            try {
-                controllerThread.join();
-                for( Thread t : robotThreads )
-                    t.join();
-            } catch( InterruptedException e ) {
-                e.printStackTrace();
-            }
+            awaitThreads();
             long end = System.nanoTime();
+
             System.out.println();
             System.out.println( "#" + i + ":  " + TimeUnit.NANOSECONDS.toMillis( end - start ) + "ms" );
-            Thread.sleep( 500 );
+            Thread.sleep( 800 );
+        }
+    }
+
+    private static void awaitThreads() {
+        try {
+            controllerThread.join();
+            for( Thread t : robotThreads )
+                t.join();
+        } catch( InterruptedException e ) {
+            e.printStackTrace();
         }
     }
 
     private static void giveRobotsStartingProducts() {
-        for( int i = 0; i < robotsCount; i++ ) {
-            robots.get( i ).addProducts( ProductFactory.create( 5, 1 ) );
-            robots.get( i ).addProducts( ProductFactory.create( 6, 2 ) );
+        for( Robot robot: robots ) {
+            robot.addProducts( ProductFactory.create( 5, 1 ) );
+            robot.addProducts( ProductFactory.create( 6, 2 ) );
         }
     }
 
@@ -56,9 +65,7 @@ public class Main {
     }
 
     public static void initController() {
-        robotThreads = new LinkedList<>();
-        robots = new LinkedList<>();
-        controller = new Controller( robots );
+        controller = new Controller( robotsCount );
         controllerThread = new Thread( controller );
     }
 
@@ -69,11 +76,13 @@ public class Main {
     }
 
     private static void initRobots() {
+        robotThreads = new LinkedList<>();
+        robots = new LinkedList<>();
         Robot robot;
+        Phase firstPhase = Phase.getFirst();
+        var recipe = controller.getRecipe( firstPhase );
         for( int i = 0; i < robotsCount; i++ ) {
-            robot = new Robot( i + 1 );
-            Phase firstPhase = Phase.getFirst();
-            robot.setNextPhase( firstPhase, controller.getRecipe( firstPhase ) );
+            robot = new Robot( i + 1, controller, firstPhase, recipe );
             robotThreads.add( new Thread( robot ) );
             robots.add( robot );
         }

@@ -1,4 +1,4 @@
-package com.company;
+package com.company.product;
 
 public class Mirror extends Product {
     private final char handleSymbol;

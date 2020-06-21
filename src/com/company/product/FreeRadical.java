@@ -1,4 +1,6 @@
-package com.company;
+package com.company.product;
+
+import com.company.product.Product;
 
 public class FreeRadical extends Product {
     private final boolean isFast;

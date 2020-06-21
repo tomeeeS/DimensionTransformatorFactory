@@ -1,4 +1,4 @@
-package com.company;
+package com.company.product;
 
 public class TransformatorFuel extends Product {
 
