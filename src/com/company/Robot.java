@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.BiFunction;
@@ -160,14 +159,10 @@ public class Robot implements Runnable {
     }
 
     private void donePhaseActions() {
-        try {
-            controller.getPhaseBarrier().await();
-        } catch( InterruptedException | BrokenBarrierException e ) {
-            e.printStackTrace();
-        }
+        controller.getPhaser().arriveAndAwaitAdvance();
         if( getCurrentPhase().isLast() ) {
             isDone = true;
-            controller.getDoneLatch().arrive();
+            controller.getPhaser().arrive();
         } else
             setNextPhase();
     }

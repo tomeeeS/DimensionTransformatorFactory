@@ -5,7 +5,6 @@ import com.company.product.Product;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Phaser;
 import java.util.concurrent.TimeUnit;
@@ -20,18 +19,12 @@ import javafx.util.Pair;
 public class Controller implements Runnable {
 
     public static final int ACTION_QUEUE_CAPACITY = 1000;
+    public static final int FINAL_PHASE_NUMBER = 3;
 
+    private int phaseNumber;
     private List< Robot > robots;
     // waiting queue for robots to get products
     private final BlockingQueue<Robot> actionQueue = new LinkedBlockingQueue<>( ACTION_QUEUE_CAPACITY );
-    private final Runnable phaseAction = () -> {
-        try {
-            System.out.println("phase done");
-            Thread.sleep( 100 );
-        } catch( InterruptedException e ) {
-            e.printStackTrace();
-        }
-    };
     // the returned pair's first element is the required count of products of that type, the second is the produced count
     private final Function< Phase, Function< Product.ProductType, Pair< Integer, Integer > > > recipes =
             phase -> productType -> {
@@ -74,13 +67,24 @@ public class Controller implements Runnable {
             };
     private volatile boolean isDone = false;
     private final int robotsCount;
-    private final Phaser doneLatch;
-    private final CyclicBarrier phaseBarrier;
+    private final Phaser phaser;
 
     public Controller( int robotsCount ) {
         this.robotsCount = robotsCount;
-        doneLatch = new Phaser( 1 + robotsCount );
-        phaseBarrier = new CyclicBarrier( robotsCount, phaseAction );
+        phaser = new Phaser( 1 + robotsCount ) {
+            @Override
+            protected boolean onAdvance( int phase, int registeredParties ) {
+                phaseNumber = phase;
+                try {
+                    System.out.println();
+                    System.out.printf("phase %d done %n %n", 1 + phaseNumber );
+                    Thread.sleep( 1000 );
+                } catch( InterruptedException e ) {
+                    e.printStackTrace();
+                }
+                return super.onAdvance( phase, registeredParties );
+            }
+        };
     }
 
     public void setRobots( List< Robot > robots ) {
@@ -98,8 +102,9 @@ public class Controller implements Runnable {
                         robot.notify();
                     }
                 } else {
-                    doneLatch.arriveAndAwaitAdvance();
-                    isDone = true;
+                    phaser.arriveAndAwaitAdvance();
+                    if( phaser.getPhase() == FINAL_PHASE_NUMBER )
+                        isDone = true;
                 }
             } catch( InterruptedException e ) {
                 e.printStackTrace();
@@ -108,16 +113,12 @@ public class Controller implements Runnable {
         System.out.printf( "Controller: I'm done, shutting down %n" );
     }
 
-    public Phaser getDoneLatch() {
-        return doneLatch;
+    public Phaser getPhaser() {
+        return phaser;
     }
 
     public Function< Product.ProductType, Pair< Integer, Integer > > getRecipe( Phase phase ) {
         return recipes.apply( phase );
-    }
-
-    public CyclicBarrier getPhaseBarrier() {
-        return phaseBarrier;
     }
 
     public void askProducts( Robot robot ) {

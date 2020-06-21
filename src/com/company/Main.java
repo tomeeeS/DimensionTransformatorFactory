@@ -35,7 +35,7 @@ public class Main {
 
             System.out.println();
             System.out.println( "#" + i + ":  " + TimeUnit.NANOSECONDS.toMillis( end - start ) + "ms" );
-            Thread.sleep( 800 );
+            Thread.sleep( 1200 );
         }
     }
 
